@@ -11,6 +11,7 @@ import PokemonTypeSelector from "@/components/pokemon-type-selector"
 import ReportsTable from "@/components/reports-table"
 import { getPokemonTypes } from "@/services/pokemon-service"
 import { getReports, createReport } from "@/services/report-service"
+import Input from "@/components/ui/input-sample-size"
 
 export default function PokemonReportsPage() {
   const [pokemonTypes, setPokemonTypes] = useState([])
@@ -20,6 +21,7 @@ export default function PokemonReportsPage() {
   const [creatingReport, setCreatingReport] = useState(false)
   const [error, setError] = useState(null)
   const [selectedType, setSelectedType] = useState("")
+  const [sampleSize, setSampleSize] = useState('')
 
   // Cargar los tipos de Pokémon
   useEffect(() => {
@@ -80,7 +82,7 @@ export default function PokemonReportsPage() {
       setCreatingReport(true)
 
       // Crear un nuevo reporte usando la API
-      await createReport(selectedType)
+      await createReport(selectedType, sampleSize)
 
       // Mostrar notificación de éxito
       toast.success(`Se ha generado un nuevo reporte para el tipo ${selectedType}.`)
@@ -122,7 +124,7 @@ export default function PokemonReportsPage() {
           )}
 
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="w-full md:w-2/3">
+            <div className="w-full md:w-1/4">
               <PokemonTypeSelector
                 pokemonTypes={pokemonTypes}
                 selectedType={selectedType}
@@ -130,7 +132,14 @@ export default function PokemonReportsPage() {
                 loading={loadingTypes}
               />
             </div>
-            <div className="w-full md:w-1/3">
+            <div className="w-full md:w-1/2">
+              <Input 
+                label='Sample Size'
+                placeholder='Max Number of Records'
+                onValueChange={setSampleSize}
+              />
+            </div>
+            <div className="w-full md:w-1/4">
               <Button
                 onClick={catchThemAll}
                 disabled={!selectedType || isLoading || creatingReport}

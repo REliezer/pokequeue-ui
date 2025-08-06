@@ -18,7 +18,7 @@ export async function getReports() {
   }
 }
 
-export async function createReport(pokemonType) {
+export async function createReport(pokemonType, sampleSize) {
   try {
     const response = await fetch(`${settings.URL}/api/request`, {
       method: "POST",
@@ -27,6 +27,7 @@ export async function createReport(pokemonType) {
       },
       body: JSON.stringify({
         pokemon_type: pokemonType,
+        sample_size: sampleSize.numericValue
       }),
     })
 
@@ -41,7 +42,7 @@ export async function createReport(pokemonType) {
   } catch (error) {
     console.error("Error creating report:", error)
     throw error
-  }
+  }  
 }
 
 export async function deleteReport(reportId) {

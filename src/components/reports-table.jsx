@@ -86,6 +86,25 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     return status && status.toLowerCase() === "completed"
   }
 
+  // Verificar si el status es "failed"
+  const isStatusFailed = (report) => {
+    const status = getPropertyValue(report, "status")
+    return status && status.toLowerCase() === "failed"
+  }
+
+  // Status color
+  const statusColor = (report) => {
+    const status = getPropertyValue(report, "status")
+    if (status.toLowerCase() === "sent")
+      return "bg-blue-100 text-blue-800"
+    if (status.toLowerCase() === "inprogress")
+      return "bg-yellow-100 text-yellow-800"
+    if (status.toLowerCase() === "completed")
+      return "bg-green-100 text-green-800"
+    if (status.toLowerCase() === "failed")
+      return "bg-red-100 text-red-800"
+  }
+
   // Manejar la descarga del CSV
   const handleDownload = (report) => {
     const url = getPropertyValue(report, "url")
@@ -188,8 +207,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                   <TableCell>{getPropertyValue(report, "reportId")}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${isStatusCompleted(report) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                        }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor(report)}`}
                     >
                       {getPropertyValue(report, "status")}
                     </span>
@@ -200,11 +218,13 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                   <TableCell>{getPropertyValue(report, "created")}</TableCell>
                   <TableCell>{getPropertyValue(report, "updated")}</TableCell>
                   <TableCell>
-                    {isStatusCompleted(report) && (
-                      <div className='flex gap-2'>
+                    <div className='flex justify-end gap-2'>
+                      {isStatusCompleted(report) && (
                         <Button variant="ghost" size="icon" onClick={() => handleDownload(report)} title="Download CSV">
                           <Download className="h-4 w-4" />
                         </Button>
+                      )}
+                      {(isStatusFailed(report) || isStatusCompleted(report)) && (
                         <DeleteConfirmDialog
                           onConfirm={() => handleDelete(report)}
                           title="Eliminar Reporte"
@@ -212,9 +232,9 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                           itemName={`Reporte ID: ${getPropertyValue(report, "ReportId")}`}
                           isLoading={deleting === getPropertyValue(report, "ReportId")}
                         >
-                          <Button 
-                            variant="destructive" 
-                            size="icon" 
+                          <Button
+                            variant="destructive"
+                            size="icon"
                             title="Delete Report"
                             disabled={deleting === getPropertyValue(report, "ReportId")}
                           >
@@ -225,8 +245,8 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                             )}
                           </Button>
                         </DeleteConfirmDialog>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
