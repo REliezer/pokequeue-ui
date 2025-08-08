@@ -8,6 +8,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Skeleton } from "@/components/ui/skeleton"
 import { deleteReport } from "@/services/report-service"
 import { DeleteConfirmDialog } from "./ui/delete-confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
 
 export default function ReportsTable({ reports, loading, onRefresh, onDownload }) {
   const [refreshing, setRefreshing] = useState(false)
@@ -15,6 +16,11 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
   const [sortedReports, setSortedReports] = useState([])
   const [sortDirection, setSortDirection] = useState("desc") // "desc" para descendente (más reciente primero)
   const [count, setCount] = useState(0) // Contador total de reportes
+
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [paginatedReports, setPaginatedReports] = useState([])
   // Ordenar los reportes cuando cambian o cuando cambia la dirección de ordenamiento
   useEffect(() => {
     if (!reports || reports.length === 0) {
@@ -52,6 +58,35 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     setCount(reportsCopy.length)
     setSortedReports(sorted)
   }, [reports, sortDirection])
+
+  // Efecto para manejar la paginación
+  useEffect(() => {
+    if (!sortedReports || sortedReports.length === 0) {
+      setPaginatedReports([])
+      return
+    }
+
+    // Calcular el índice de inicio y fin para la página actual
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+
+    // Obtener los reportes para la página actual
+    const reportsForPage = sortedReports.slice(startIndex, endIndex)
+    setPaginatedReports(reportsForPage)
+  }, [sortedReports, currentPage, itemsPerPage])
+
+  // Función para cambiar de página
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+  }
+
+  // Calcular el número total de páginas
+  const totalPages = Math.ceil(count / itemsPerPage)
+
+  // Resetear a la primera página cuando cambian los reportes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [reports])
 
   // Función para cambiar la dirección de ordenamiento
   const toggleSortDirection = () => {
@@ -150,7 +185,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
   return (
     <div className="overflow-x-auto">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-medium">{`Reports ${count}`}</h3>
+        <h3 className="text-lg font-medium">{`Reports`}</h3>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -201,8 +236,8 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedReports.length > 0 ? (
-              sortedReports.map((report, index) => (
+            {paginatedReports.length > 0 ? (
+              paginatedReports.map((report, index) => (
                 <TableRow key={getPropertyValue(report, "reportId") || index}>
                   <TableCell>{getPropertyValue(report, "reportId")}</TableCell>
                   <TableCell>
@@ -259,6 +294,17 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
             )}
           </TableBody>
         </Table>
+      )}
+
+      {/* Componente de Paginación */}
+      {!loading && count > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={count}
+        />
       )}
     </div>
   )
